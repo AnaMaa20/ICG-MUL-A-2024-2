@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dibujar Polígonos con Líneas Internas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        canvas {
+            border: 10px solid rgb(226, 152, 183);
+            background-color: burlywood;
+        }
+        input, button {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dibujar Polígonos Regulares con Líneas Internas</h1>
+    <label for="sides">Número de lados:</label>
+    <input type="number" id="sides" min="3" value="3">
+    <label for="size">Tamaño del lado:</label>
+    <input type="number" id="size" min="20" value="100">
+    <br>
+    <button onclick="drawPolygon()">Dibujar Polígono</button>
+    <button onclick="clearCanvas()">Borrar</button>
+    <br>
+    <canvas id="canvas" width="600" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        function drawPolygon() {
+            const sides = parseInt(document.getElementById('sides').value);
+            const size = parseInt(document.getElementById('size').value);
+
+            if (sides < 3 || size <= 0) {
+                alert('Número de lados debe ser al menos 3 y el tamaño debe ser positivo.');
+                return;
+            }
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = size / (2 * Math.sin(Math.PI / sides));
+            const angleStep = 2 * Math.PI / sides;
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibuja el polígono
+            context.beginPath();
+            context.moveTo(centerX + radius * Math.cos(0), centerY + radius * Math.sin(0));
+
+            for (let i = 1; i <= sides; i++) {
+                const x = centerX + radius * Math.cos(i * angleStep);
+                const y = centerY + radius * Math.sin(i * angleStep);
+                context.lineTo(x, y);
+            }
+
+            context.closePath();
+            context.stroke();
+
+            // Dibuja las líneas desde los vértices al centro
+            context.beginPath();
+            for (let i = 0; i < sides; i++) {
+                const x = centerX + radius * Math.cos(i * angleStep);
+                const y = centerY + radius * Math.sin(i * angleStep);
+                context.moveTo(x, y);
+                context.lineTo(centerX, centerY);
+            }
+            context.stroke();
+        }
+
+        function clearCanvas() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
