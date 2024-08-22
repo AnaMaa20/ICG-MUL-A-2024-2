@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Figuras Geométricas</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 45%;
+        }
+        #svgContainer, #canvasContainer {
+            border: 2px solid #000;
+            height: 400px;
+        }
+        input, select, button {
+            margin: 5px;
+        }
+        #controls {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Imágenes Vectorizadas (SVG)</h2>
+        <div id="svgContainer"></div>
+    </div>
+
+    <div class="container">
+        <h2>Imágenes Rasterizadas (Canvas)</h2>
+        <canvas id="canvasContainer" width="400" height="400"></canvas>
+    </div>
+
+    <div id="controls">
+        <h3>Controles</h3>
+        <label for="shape">Forma:</label>
+        <select id="shape">
+            <option value="rect">Rectángulo</option>
+            <option value="square">Cuadrado</option>
+            <option value="circle">Círculo</option>
+            <option value="triangle">Triángulo</option>
+            <option value="pentagon">Pentágono</option>
+            <option value="hexagon">Hexágono</option>
+        </select><br>
+
+        <label for="width">Ancho:</label>
+        <input type="number" id="width" value="100"><br>
+
+        <label for="height">Alto:</label>
+        <input type="number" id="height" value="100"><br>
+
+        <label for="x">Posición X:</label>
+        <input type="number" id="x" value="50"><br>
+
+        <label for="y">Posición Y:</label>
+        <input type="number" id="y" value="50"><br>
+
+        <label for="fillColor">Color de Relleno:</label>
+        <input type="color" id="fillColor" value="#ff0000"><br>
+
+        <label for="strokeColor">Color del Borde:</label>
+        <input type="color" id="strokeColor" value="#000000"><br>
+
+        <label for="strokeWidth">Grosor del Borde:</label>
+        <input type="number" id="strokeWidth" value="2"><br>
+
+        <button onclick="drawAndExport()">Dibujar</button>
+        <button onclick="clearShapes()">Borrar</button>
+    </div>
+
+    <script>
+        function drawAndExport() {
+            // Obtener valores del usuario
+            const shape = document.getElementById('shape').value;
+            const width = parseInt(document.getElementById('width').value);
+            const height = parseInt(document.getElementById('height').value);
+            const x = parseInt(document.getElementById('x').value);
+            const y = parseInt(document.getElementById('y').value);
+            const fillColor = document.getElementById('fillColor').value;
+            const strokeColor = document.getElementById('strokeColor').value;
+            const strokeWidth = parseInt(document.getElementById('strokeWidth').value);
+
+            // Limpiar contenedores
+            clearSVG();
+            clearCanvas();
+
+            // Dibujar SVG
+            drawSVG(shape, x, y, width, height, fillColor, strokeColor, strokeWidth);
+
+            // Dibujar Canvas con SVG convertido
+            setTimeout(() => exportSVGToCanvas(), 100); // Esperar un momento para asegurarse de que el SVG se haya dibujado
+        }
+
+        function
+
