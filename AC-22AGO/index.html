@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dibujar Polígonos con Líneas Internas</title>
+    <title>Dibujar Polígonos con Lado Paralelo al Eje X</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <h1>Dibujar Polígonos Regulares con Líneas Internas</h1>
+    <h1>Dibujar Polígonos con un Lado Paralelo al Eje X</h1>
     <label for="sides">Número de lados:</label>
     <input type="number" id="sides" min="3" value="3">
     <label for="size">Tamaño del lado:</label>
@@ -49,30 +49,43 @@
             const radius = size / (2 * Math.sin(Math.PI / sides));
             const angleStep = 2 * Math.PI / sides;
 
+            // Calcular el ángulo inicial para que uno de los lados sea paralelo al eje X
+            // Para lograr que un lado sea paralelo al eje X, se ajusta el ángulo en función del número de lados
+            const startAngle = Math.PI / 2 - (Math.PI / sides);
+
+            // Limpiar el canvas
             context.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Dibuja el polígono
+            // Dibuja el polígono sólido
             context.beginPath();
-            context.moveTo(centerX + radius * Math.cos(0), centerY + radius * Math.sin(0));
+            const initialX = centerX + radius * Math.cos(startAngle);
+            const initialY = centerY + radius * Math.sin(startAngle);
+            context.moveTo(initialX, initialY);
 
             for (let i = 1; i <= sides; i++) {
-                const x = centerX + radius * Math.cos(i * angleStep);
-                const y = centerY + radius * Math.sin(i * angleStep);
+                const x = centerX + radius * Math.cos(startAngle + i * angleStep);
+                const y = centerY + radius * Math.sin(startAngle + i * angleStep);
                 context.lineTo(x, y);
             }
 
             context.closePath();
-            context.stroke();
+            context.fillStyle = '#3498db'; // Color sólido del polígono
+            context.fill(); // Rellenar el polígono con el color sólido
+            context.strokeStyle = '#2980b9'; // Color del borde del polígono
+            context.stroke(); // Dibujar el borde del polígono
+            const anguloInicial = (Math.PI / 2) - (Math.PI / numLados);
+//centrar poligono
+            for (let i = 0; i <= numLados; i++) {
+                const angulo = anguloInicial + i * 2 * Math.PI / numLados;
+                const x = centroX + radio * Math.cos(angulo);
+                const y = centroY + radio * Math.sin(angulo);
 
-            // Dibuja las líneas desde los vértices al centro
-            context.beginPath();
-            for (let i = 0; i < sides; i++) {
-                const x = centerX + radius * Math.cos(i * angleStep);
-                const y = centerY + radius * Math.sin(i * angleStep);
-                context.moveTo(x, y);
-                context.lineTo(centerX, centerY);
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
             }
-            context.stroke();
         }
 
         function clearCanvas() {
