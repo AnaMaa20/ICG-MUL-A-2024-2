@@ -16,14 +16,32 @@ class Punto {
     }
 }
 
-// Lista de puntos predefinidos
-const puntos = [
-    new Punto(50, 50),
-    new Punto(150, 30),
-    new Punto(250, 70),
-    new Punto(200, 150),
-    new Punto(100, 120)
-];
+// Función para generar puntos en un polígono simple
+function generarPuntosAleatorios(cantidad) {
+    const puntos = [];
+    const radio = 80; // Radio del círculo
+    const centroX = 150; // Centro X del polígono
+    const centroY = 100; // Centro Y del polígono
+
+    // Generar puntos en un círculo
+    for (let i = 0; i < cantidad; i++) {
+        const angulo = (i / cantidad) * 2 * Math.PI; // Ángulo para cada punto
+        const x = centroX + radio * Math.cos(angulo);
+        const y = centroY + radio * Math.sin(angulo);
+        puntos.push(new Punto(x, y));
+    }
+
+    // Hacer que el polígono sea cóncavo aleatoriamente
+    if (Math.random() > 0.5) { // 50% de probabilidad de hacer cóncavo
+        const index = Math.floor(Math.random() * cantidad);
+        // Mover un punto hacia adentro para hacer el polígono cóncavo
+        puntos[index] = new Punto(puntos[index].x - 40, puntos[index].y + 40);
+    }
+
+    return puntos;
+}
+
+let puntos = generarPuntosAleatorios(5);
 
 function esConvexa(puntos) {
     const signo = (p1, p2, p3) => {
@@ -77,7 +95,7 @@ function trazarPoligonoRasterizado(puntos) {
     resultado.textContent = esConvexa(puntos) ? "El polígono es convexa." : "El polígono es cóncava.";
 }
 
-// Dibujar polígono al cargar
+// Trazar el polígono al cargar
 trazarPoligonoRasterizado(puntos);
 
 // Trazar el centroide y líneas
@@ -101,4 +119,10 @@ document.getElementById('trazarCentroide').onclick = function() {
         ctx.lineTo(punto.x, punto.y);
         ctx.stroke();
     });
+};
+
+// Agregar evento al botón "Dibujar Figura"
+document.getElementById('dibujar').onclick = function() {
+    puntos = generarPuntosAleatorios(5);
+    trazarPoligonoRasterizado(puntos);
 };
