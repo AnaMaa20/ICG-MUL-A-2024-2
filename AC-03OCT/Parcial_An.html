@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polígono Convexo o Cóncavo</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        canvas, svg {
+            border: 1px solid black;
+            width: 300px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Polígono Convexo o Cóncavo</h1>
+    
+    <button id="rasterizar">Mostrar en Rasterizado</button>
+    <button id="vectorizar">Mostrar en Vectorizado</button>
+    <button id="mostrarCentroide">Mostrar Centroide</button>
+    
+    <div class="container">
+        <canvas id="canvas" style="display:none;"></canvas>
+        <svg id="svg" style="display:none;"></svg>
+    </div>
+    
+    <p id="resultado"></p>
+
+    <script>
+        class Punto {
+            #x; // Propiedad privada
+            #y; // Propiedad privada
+
+            constructor(x, y) {
+                this.#x = x;
+                this.#y = y;
+            }
+
+            get x() {
+                return this.#x;
+            }
+
+            get y() {
+                return this.#y;
+            }
+        }
+
+        const puntos = [
+            new Punto(100, 100),
+            new Punto(200, 50),
+            new Punto(250, 150),
+            new Punto(150, 200),
+            new Punto(100, 150)
+        ];
+
+        function esConvexo(puntos) {
+            const signo = (p1, p2, p3) => {
+                return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+            };
+
+            let n = puntos.length;
+            if (n < 3) return false; // No puede ser un polígono
+
+            let direcciones = [];
+            for (let i = 0; i < n; i++) {
+                let d = signo(puntos[i], puntos[(i + 1) % n], puntos[(i + 2) % n]);
+                if (d !== 0) {
+                    direcciones.push(d > 0);
+                }
+            }
+            return direcciones.every(d => d) || !direcciones.some(d => d); // Todos los mismos signos
+        }
+
+        function calcularCentroide(puntos) {
+            let xSum = 0;
+            let ySum = 0;
+            for (let punto of puntos) {
+                xSum += punto.x;
+                ySum += punto.y;
+            }
+            return new Punto(xSum / puntos.length, ySum / puntos.length);
+        }
+
+        function trazarPoligonoRasterizado(puntos, mostrarCentroide = false) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Ajustar el tamaño del canvas según el contenido
+            canvas.width = 300;
+            canvas.height = 200;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar canvas
+            ctx.beginPath();
+            ctx.moveTo(puntos[0].x, puntos[0].y);
+
+            for (let punto of puntos) {
+                ctx.lineTo(punto.x, punto.y);
+            }
+
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(100, 150, 250, 0.5)';
+            ctx.fill();
+            ctx.stroke();
+
+            if (mostrarCentroide) {
+                const centroide = calcularCentroide(puntos);
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(centroide.x, centroide.y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = 'red';
+                ctx.moveTo(centroide.x, centroide.y);
+                ctx.lineTo(puntos[0].x, puntos[0].y); // Línea al primer punto
+                ctx.stroke();
+            }
+
+            canvas.style.display = 'block'; // Mostrar canvas
+        }
+
+        function trazarPoligonoVectorizado(puntos, mostrarCentroide = false) {
+            const svg = document.getElementById('svg');
+            svg.innerHTML = ''; // Limpiar SVG
+
+            let pathData = `M ${puntos[0].x},${puntos[0].y}`;
+            for (let punto of puntos) {
+                pathData += ` L ${punto.x},${punto.y}`;
+            }
+            pathData += ' Z'; // Cerrar el camino
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('fill', 'rgba(100, 150, 250, 0.5)');
+            path.setAttribute('stroke', 'black');
+
+            svg.appendChild(path);
+
+            if (mostrarCentroide) {
+                const centroide = calcularCentroide(puntos);
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', centroide.x);
+                circle.setAttribute('cy', centroide.y);
+                circle.setAttribute('r', 5);
+                circle.setAttribute('fill', 'red');
+                svg.appendChild(circle);
+                
+                // Línea al primer punto
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', centroide.x);
+                line.setAttribute('y1', centroide.y);
+                line.setAttribute('x2', puntos[0].x);
+                line.setAttribute('y2', puntos[0].y);
+                line.setAttribute('stroke', 'red');
+                svg.appendChild(line);
+            }
+
+            svg.style.display = 'block'; // Mostrar SVG
+        }
+
+        function main() {
+            const resultado = document.getElementById('resultado');
+            if (esConvexo(puntos)) {
+                resultado.textContent = "El polígono es convexo.";
+            } else {
+                resultado.textContent = "El polígono es cóncavo.";
+            }
+        }
+
+        document.getElementById('rasterizar').onclick = function() {
+            trazarPoligonoRasterizado(puntos);
+            document.getElementById('svg').style.display = 'none'; // Ocultar SVG
+        };
+
+        document.getElementById('vectorizar').onclick = function() {
+            trazarPoligonoVectorizado(puntos);
+            document.getElementById('canvas').style.display = 'none'; // Ocultar canvas
+        };
+
+        document.getElementById('mostrarCentroide').onclick = function() {
+            trazarPoligonoRasterizado(puntos, true);
+            trazarPoligonoVectorizado(puntos, true);
+        };
+
+        main();
+    </script>
+</body>
+</html>
