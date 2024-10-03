@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imágenes Vectorizadas: Línea, Circunferencia y Elipse</title>
+</head>
+<body>
+    <svg id="svgCanvas" width="600" height="400" style="border: 1px solid rgb(45, 108, 148);"></svg>
+
+    <script>
+        // Clase base para manejar el SVG
+        class SVGCanvas {
+            constructor(svgElement) {
+                this.svgElement = svgElement;
+            }
+
+            addElement(tag, attributes) {
+                const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
+                for (let attr in attributes) {
+                    element.setAttribute(attr, attributes[attr]);
+                }
+                this.svgElement.appendChild(element);
+            }
+        }
+
+        // Clase Punto
+        class Punto {
+            #x; // Declaración de la propiedad privada
+            #y; // Declaración de la propiedad privada
+
+            constructor(x, y) {
+                this.#x = x;
+                this.#y = y;
+            }
+
+            getX() {
+                return this.#x;
+            }
+
+            getY() {
+                return this.#y;
+            }
+        }
+
+        // Clase Linea utilizando el algoritmo de Bresenham
+        class Linea {
+            #punto1; // Declaración de la propiedad privada
+            #punto2; // Declaración de la propiedad privada
+
+            constructor(svgElement, punto1, punto2) {
+                this.svgElement = svgElement;
+                this.#punto1 = punto1;
+                this.#punto2 = punto2;
+
+                this.dibujar(); // Dibuja la línea al crear la instancia
+            }
+
+            // Método para implementar el algoritmo de Bresenham
+            bresenham() {
+                let x1 = this.#punto1.getX();
+                let y1 = this.#punto1.getY();
+                let x2 = this.#punto2.getX();
+                let y2 = this.#punto2.getY();
+                const points = [];
+
+                const dx = Math.abs(x2 - x1);
+                const dy = Math.abs(y2 - y1);
+                const sx = (x1 < x2) ? 1 : -1;
+                const sy = (y1 < y2) ? 1 : -1;
+                let err = dx - dy;
+
+                while (true) {
+                    points.push({ x: x1, y: y1 });
+                    if (x1 === x2 && y1 === y2) break;
+                    const err2 = err * 2;
+                    if (err2 > -dy) {
+                        err -= dy;
+                        x1 += sx;
+                    }
+                    if (err2 < dx) {
+                        err += dx;
+                        y1 += sy;
+                    }
+                }
+                return points;
+            }
+
+            // Método para dibujar la línea
+            dibujar() {
+                const points = this.bresenham();
+                points.forEach(point => {
+                    this.svgElement.appendChild(this.crearPunto(point.x, point.y));
+                });
+            }
+
+            crearPunto(x, y) {
+                const circleElement = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                circleElement.setAttribute('cx', x);
+                circleElement.setAttribute('cy', y);
+                circleElement.setAttribute('r', 2); // Radio pequeño para simular un pixel
+                circleElement.setAttribute('fill', 'black');
+                return circleElement;
+            }
+        }
+
+        // Clase Circunferencia
+        class Circunferencia {
+            #centro; // Declaración de la propiedad privada
+            #r; // Declaración de la propiedad privada
+
+            constructor(svgElement, centro, r) {
+                this.svgElement = svgElement;
+                this.#centro = centro;
+                this.#r = r;
+
+                this.dibujar(); // Dibuja la circunferencia al crear la instancia
+            }
+
+            dibujar() {
+                const circleElement = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                circleElement.setAttribute('cx', this.#centro.getX());
+                circleElement.setAttribute('cy', this.#centro.getY());
+                circleElement.setAttribute('r', this.#r);
+                circleElement.setAttribute('stroke', 'pink');
+                circleElement.setAttribute('stroke-width', 2);
+                circleElement.setAttribute('fill', 'none');
+                this.svgElement.appendChild(circleElement);
+            }
+        }
+
+        // Clase Elipse
+        class Elipse {
+            #centro; // Declaración de la propiedad privada
+            #rx; // Declaración de la propiedad privada
+            #ry; // Declaración de la propiedad privada
+
+            constructor(svgElement, centro, rx, ry) {
+                this.svgElement = svgElement;
+                this.#centro = centro;
+                this.#rx = rx;
+                this.#ry = ry;
+
+                this.dibujar(); // Dibuja la elipse al crear la instancia
+            }
+
+            dibujar() {
+                const ellipseElement = document.createElementNS("http://www.w3.org/2000/svg", 'ellipse');
+                ellipseElement.setAttribute('cx', this.#centro.getX());
+                ellipseElement.setAttribute('cy', this.#centro.getY());
+                ellipseElement.setAttribute('rx', this.#rx);
+                ellipseElement.setAttribute('ry', this.#ry);
+                ellipseElement.setAttribute('stroke', 'blue');
+                ellipseElement.setAttribute('stroke-width', 2);
+                ellipseElement.setAttribute('fill', 'none');
+                this.svgElement.appendChild(ellipseElement);
+            }
+        }
+
+        // Crear el canvas SVG
+        const svgCanvasElement = document.getElementById('svgCanvas');
+        const svgCanvas = new SVGCanvas(svgCanvasElement);
+
+        // Crear puntos
+        const punto1 = new Punto(50, 50);
+        const punto2 = new Punto(200, 200);
+        const centroCircunferencia = new Punto(300, 100);
+        const centroElipse = new Punto(400, 300);
+
+        // Dibujar las figuras
+        new Linea(svgCanvasElement, punto1, punto2);
+        new Circunferencia(svgCanvasElement, centroCircunferencia, 50);
+        new Elipse(svgCanvasElement, centroElipse, 80, 50);
+    </script>
+    <script src="Line_CIRelip_script.js"></script>
+</body>
+</html>
