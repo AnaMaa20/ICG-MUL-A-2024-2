@@ -16,14 +16,32 @@ class Punto {
     }
 }
 
-// Lista de puntos predefinidos
-const puntos = [
-    new Punto(50, 50),
-    new Punto(150, 30),
-    new Punto(250, 70),
-    new Punto(200, 150),
-    new Punto(100, 120)
-];
+// Función para generar puntos en un polígono simple
+function generarPuntosAleatorios(cantidad) {
+    const puntos = [];
+    const radio = 80; // Radio del círculo
+    const centroX = 150; // Centro X del polígono
+    const centroY = 100; // Centro Y del polígono
+
+    // Generar puntos en un círculo
+    for (let i = 0; i < cantidad; i++) {
+        const angulo = (i / cantidad) * 2 * Math.PI; // Ángulo para cada punto
+        const x = centroX + radio * Math.cos(angulo);
+        const y = centroY + radio * Math.sin(angulo);
+        puntos.push(new Punto(x, y));
+    }
+
+    // Hacer que el polígono sea cóncavo aleatoriamente
+    if (Math.random() > 0.5) { // 50% de probabilidad de hacer cóncavo
+        const index = Math.floor(Math.random() * cantidad);
+        // Mover un punto hacia adentro para hacer el polígono cóncavo
+        puntos[index] = new Punto(puntos[index].x - 40, puntos[index].y + 40);
+    }
+
+    return puntos;
+}
+
+let puntos = generarPuntosAleatorios(5);
 
 function esConvexa(puntos) {
     const signo = (p1, p2, p3) => {
@@ -54,20 +72,23 @@ function calcularCentroide(puntos) {
 }
 
 function trazarPoligonoVectorizado(puntos) {
-    const svg = document.getElementById('svg');
-    svg.innerHTML = ''; // Limpiar SVG
+    const svg = document.getElementById('svgCanvas');
+    svg.innerHTML = ''; // Limpiar el SVG
 
-    let pathData = `M ${puntos[0].x},${puntos[0].y}`;
+    let d = 'M ' + puntos[0].x + ' ' + puntos[0].y; // Mover a primer punto
+
     for (let punto of puntos) {
-        pathData += ` L ${punto.x},${punto.y}`;
+        d += ' L ' + punto.x + ' ' + punto.y; // Línea a cada punto
     }
-    pathData += ' Z'; // Cerrar el camino
 
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', pathData);
-    path.setAttribute('fill', 'rgba(100, 150, 250, 0.5)');
-    path.setAttribute('stroke', 'black');
-    svg.appendChild(path);
+    d += ' Z'; // Cerrar el polígono
+
+    const poligono = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    poligono.setAttribute('d', d);
+    poligono.setAttribute('fill', 'rgba(100, 150, 250, 0.5)');
+    poligono.setAttribute('stroke', 'black');
+
+    svg.appendChild(poligono);
 
     // Resultado convexidad
     const resultado = document.getElementById('resultado');
@@ -79,25 +100,32 @@ trazarPoligonoVectorizado(puntos);
 
 // Trazar el centroide y líneas
 document.getElementById('trazarCentroide').onclick = function() {
+    const svg = document.getElementById('svgCanvas');
+    
     const centroide = calcularCentroide(puntos);
-    const svg = document.getElementById('svg');
-
+    
     // Dibujar centroide
-    const centroideCirculo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    centroideCirculo.setAttribute('cx', centroide.x);
-    centroideCirculo.setAttribute('cy', centroide.y);
-    centroideCirculo.setAttribute('r', 5);
-    centroideCirculo.setAttribute('fill', 'red');
-    svg.appendChild(centroideCirculo);
-
+    const circulo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circulo.setAttribute('cx', centroide.x);
+    circulo.setAttribute('cy', centroide.y);
+    circulo.setAttribute('r', 5);
+    circulo.setAttribute('fill', 'red');
+    svg.appendChild(circulo);
+    
     // Dibujar líneas desde el centroide hasta los vértices
     puntos.forEach(punto => {
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', centroide.x);
-        line.setAttribute('y1', centroide.y);
-        line.setAttribute('x2', punto.x);
-        line.setAttribute('y2', punto.y);
-        line.setAttribute('stroke', 'red');
-        svg.appendChild(line);
+        const linea = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        linea.setAttribute('x1', centroide.x);
+        linea.setAttribute('y1', centroide.y);
+        linea.setAttribute('x2', punto.x);
+        linea.setAttribute('y2', punto.y);
+        linea.setAttribute('stroke', 'red');
+        svg.appendChild(linea);
     });
+};
+
+// Agregar evento al botón "Dibujar Figura"
+document.getElementById('dibujar').onclick = function() {
+    puntos = generarPuntosAleatorios(5);
+    trazarPoligonoVectorizado(puntos);
 };
