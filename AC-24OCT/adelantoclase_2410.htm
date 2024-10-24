@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relleno de Regiones</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            max-width: 100%; /* Para que el canvas no exceda el ancho de la pantalla */
+        }
+    </style>
+</head>
+<body>
+    <h1>Algoritmos de Relleno: Flood Fill y Scanline Fill</h1>
+    <input type="file" id="imageLoader" accept="image/*">
+    <select id="fillAlgorithm">
+        <option value="floodFill">Flood Fill</option>
+        <option value="scanlineFill">Scanline Fill</option>
+    </select>
+    <button id="startFill">Iniciar Relleno</button>
+    <button id="stopFill">Detener Relleno</button>
+    <canvas id="canvas"></canvas>
+    <script src="adelantoclase_2410.js"></script>
+</body>
+</html>
