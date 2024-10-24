@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algoritmos de Relleno y Recorte</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Algoritmos de Relleno de Escaneo y Recorte Cohen-Sutherland</h1>
+    <canvas id="canvas" width="600" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Algoritmo de Relleno de Escaneo
+        function scanlineFill(points) {
+            ctx.fillStyle = 'rgba(0, 150, 0, 0.5)'; // Color de relleno
+            ctx.beginPath();
+            ctx.moveTo(points[0][0], points[0][1]);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i][0], points[i][1]);
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Algoritmo de Recorte Cohen-Sutherland
+        const OUTCODE = {
+            TOP: 0b0001,
+            BOTTOM: 0b0010,
+            LEFT: 0b0100,
+            RIGHT: 0b1000
+        };
+
+        function computeOutCode(x, y, xMin, yMin, xMax, yMax) {
+            let code = 0;
+            if (x < xMin) code |= OUTCODE.LEFT;
+            else if (x > xMax) code |= OUTCODE.RIGHT;
+            if (y < yMin) code |= OUTCODE.TOP;
+            else if (y > yMax) code |= OUTCODE.BOTTOM;
+            return code;
+        }
+
+        function cohenSutherland(x0, y0, x1, y1, xMin, yMin, xMax, yMax) {
+            let outcode0 = computeOutCode(x0, y0, xMin, yMin, xMax, yMax);
+            let outcode1 = computeOutCode(x1, y1, xMin, yMin, xMax, yMax);
+            let accept = false;
+
+            while (true) {
+                if (!(outcode0 | outcode1)) {
+                    accept = true;
+                    break;
+                } else if (outcode0 & outcode1) {
+                    break;
+                } else {
+                    let outcodeOut = outcode0 ? outcode0 : outcode1;
+                    let x, y;
+
+                    if (outcodeOut & OUTCODE.TOP) {
+                        x = x0 + (x1 - x0) * (yMin - y0) / (y1 - y0);
+                        y = yMin;
+                    } else if (outcodeOut & OUTCODE.BOTTOM) {
+                        x = x0 + (x1 - x0) * (yMax - y0) / (y1 - y0);
+                        y = yMax;
+                    } else if (outcodeOut & OUTCODE.RIGHT) {
+                        y = y0 + (y1 - y0) * (xMax - x0) / (x1 - x0);
+                        x = xMax;
+                    } else if (outcodeOut & OUTCODE.LEFT) {
+                        y = y0 + (y1 - y0) * (xMin - x0) / (x1 - x0);
+                        x = xMin;
+                    }
+
+                    if (outcodeOut === outcode0) {
+                        x0 = x;
+                        y0 = y;
+                        outcode0 = computeOutCode(x0, y0, xMin, yMin, xMax, yMax);
+                    } else {
+                        x1 = x;
+                        y1 = y;
+                        outcode1 = computeOutCode(x1, y1, xMin, yMin, xMax, yMax);
+                    }
+                }
+            }
+
+            return { accept, x0, y0, x1, y1 };
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Polígono para el relleno de escaneo
+            const polygon = [[100, 100], [150, 50], [200, 100], [200, 150], [150, 200], [100, 150]];
+            scanlineFill(polygon);
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+
+            // Rectángulo de recorte
+            const xMin = 120, yMin = 120, xMax = 180, yMax = 180;
+            ctx.strokeStyle = 'blue';
+            ctx.strokeRect(xMin, yMin, xMax - xMin, yMax - yMin);
+
+            // Línea a recortar
+            const lineStart = { x: 50, y: 50 };
+            const lineEnd = { x: 250, y: 250 };
+            ctx.strokeStyle = 'red';
+            ctx.beginPath();
+            ctx.moveTo(lineStart.x, lineStart.y);
+            ctx.lineTo(lineEnd.x, lineEnd.y);
+            ctx.stroke();
+
+            // Aplicar Cohen-Sutherland
+            const result = cohenSutherland(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y, xMin, yMin, xMax, yMax);
+            if (result.accept) {
+                ctx.strokeStyle = 'green';
+                ctx.beginPath();
+                ctx.moveTo(result.x0, result.y0);
+                ctx.lineTo(result.x1, result.y1);
+                ctx.stroke();
+            } else {
+                console.log("La línea está completamente fuera del área de recorte.");
+            }
+        }
+
+        draw();
+    </script>
+</body>
+</html>
